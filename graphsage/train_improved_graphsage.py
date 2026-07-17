@@ -430,6 +430,7 @@ def run_once(args, run_id, device):
         "jk_mode":       args.jk_mode,
         "importance_sampling": args.importance_sampling,
         "sampling_mode": "sampled" if args.sampling else "full",
+        "num_params":    count_params(model),
         "best_val":      best_val,
         "best_test":     best_test,
         "best_epoch":    best_epoch,

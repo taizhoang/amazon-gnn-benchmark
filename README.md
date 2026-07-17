@@ -20,12 +20,14 @@ itself and keeps peak memory at O(E) for the full graph.
 | [graphsage/](graphsage/) | `train_improved_graphsage.py` | + multi-aggregator (mean/max/std), Jumping Knowledge, degree-based importance sampling |
 | [sagat/](sagat/) | `train_sagat.py` | GAT baseline / structural-feature-concat ablation / Structure-Aware GAT (structural bias injected into attention) |
 | [gamlp/](gamlp/) | `train_gamlp.py` | GAMLP (decoupled propagation + hop-attention MLP), plain or RLU (label propagation + self-training) mode |
-| [gamlp/](gamlp/) | `train_retrieval_gamlp.py` | + retrieval-guided hop features (FAISS or exact-torch nearest-neighbour fusion) |
+| [gamlp/](gamlp/) | `train_transformer_gamlp.py` | Multi-operator (mean + symmetric normalisation) hop tokens fed through a Transformer encoder with attention pooling and a gated-residual classifier |
+| [lightgcn/](lightgcn/) | `train_lightgcn_grand.py` | LightGCN layer-combination propagation trained with GRAND (DropNode + consistency regularisation), plus an optional class-Compatibility-Propagation (CoP) channel |
 
 Each script is self-contained and runnable directly (`python graphsage/train_graphsage.py`),
 writing to its own `outputs/<model>/<timestamp>_run.../` directory:
-`train.log`, `metrics.jsonl` (per epoch), `results.json` (final), `curves.png`
-(loss/accuracy plot), and a `best.pt` / `best_model.pt` checkpoint.
+`train.log`, `metrics.jsonl` (per epoch), `results.json` (final, including
+`num_params`), `curves.png` (loss/accuracy plot), and a `best.pt` /
+`best_model.pt` checkpoint.
 
 ## Setup
 
@@ -65,13 +67,28 @@ python sagat/train_sagat.py --variant sagat          # also runs the attention-v
 python gamlp/train_gamlp.py --mode plain --cache-features
 python gamlp/train_gamlp.py --mode rlu --cache-features
 
-# Retrieval-Guided GAMLP
-python gamlp/train_retrieval_gamlp.py --cache-features --cache-retrieval
+# Transformer GAMLP
+python gamlp/train_transformer_gamlp.py --cache-features
+
+# LightGCN-GRAND (CoP channel on by default; disable with --no-use-H)
+python lightgcn/train_lightgcn_grand.py
+python lightgcn/train_lightgcn_grand.py --low-label-split   # reproduce GRAND's original 20/30-per-class regime (not comparable to the rows above)
 ```
 
 Every script exposes `--hidden`, `--dropout`, `--lr`, `--epochs`,
 `--patience`, `--seed`, `--num-runs`, `--gpu` (`--gpu -1` forces CPU), plus
 model-specific flags — run any script with `--help` for the full list.
+
+## Notebooks
+
+| Notebook | Purpose |
+|---|---|
+| [notebooks/01_eda.ipynb](notebooks/01_eda.ipynb) | Dataset exploration — split sizes, label distribution, feature stats, degree distribution, edge homophily. Loads through `common/data.py`, so the numbers match what every training script actually sees. |
+| [notebooks/02_train_all_standalone.ipynb](notebooks/02_train_all_standalone.ipynb) | Trains every model **standalone** — every utility, the dataset loader, and all 6 model implementations are written directly in the notebook's own cells, no `import` from `common/`/`graphsage/`/`sagat/`/`gamlp/`/`lightgcn/`. Copy this one file (+ `split_idx.csv`) and it runs on its own, e.g. on Kaggle (a commented `%pip install` cell at the top covers a fresh environment). Defaults to a fast `SMOKE_TEST` pass over all 6 models; flip one flag for full training. |
+
+▶ **Run `02_train_all_standalone.ipynb` on Kaggle:** https://www.kaggle.com/code/phanchanchan/amazon-gnn-benchmark
+
+Both notebooks write their figures/tables/checkpoints under `outputs/` (gitignored), same as the training scripts.
 
 ## Provenance
 
@@ -85,8 +102,17 @@ benchmark:
   degree/PageRank/clustering/betweenness injected into GAT attention —
   reimplemented from scratch in pure PyTorch; the original prototype used
   DGL and computed the same idea with `edge_softmax`).
-- **GraphML_subject** — `gamlp/train_gamlp.py`, `gamlp/train_retrieval_gamlp.py`
-  (GAMLP baseline and the retrieval-guided variant, ported with the
-  torch-sparse `SparseTensor` hop-propagation replaced by `common.utils.propagate_mean`,
-  a plain `scatter_add`-based equivalent — exact, not approximate, since this
-  dataset's adjacency is symmetric; see that function's docstring).
+- **GraphML_subject** — `gamlp/train_gamlp.py`, `gamlp/train_transformer_gamlp.py`
+  (GAMLP baseline and the Transformer-over-hop-tokens variant, ported with the
+  torch-sparse `SparseTensor` hop-propagation replaced by `common.utils.propagate_mean`
+  / `weighted_propagate`, plain `scatter_add`-based equivalents — exact, not
+  approximate, since this dataset's adjacency is symmetric; see
+  `propagate_mean`'s docstring). An earlier retrieval-guided GAMLP variant was
+  ported first but was replaced upstream in GraphML_subject by the Transformer
+  variant, so this repo now tracks that instead.
+- `lightGCN-GRAND.py` (repo root) — a TensorFlow prototype, ported to pure
+  PyTorch as `lightgcn/train_lightgcn_grand.py` using the same
+  `common/utils.py` scatter ops as everything else (new: `gcn_norm_edge_weight`
+  + `weighted_propagate`), and switched from its original low-label-rate
+  split to the benchmark's shared `split_idx.csv` by default (see
+  `--low-label-split` to opt back into the original regime).

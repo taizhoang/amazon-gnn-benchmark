@@ -278,6 +278,7 @@ def run_once(args, run_id, device):
 
     result = {
         "run": run_id, "model": "graphsage", "mode": "sampled" if args.sampling else "full",
+        "num_params": count_params(model),
         "best_val": best_val, "best_test": best_test, "best_epoch": best_epoch, "output_dir": str(out_dir),
     }
     write_json(out_dir / "results.json", result)

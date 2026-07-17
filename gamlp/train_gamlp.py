@@ -591,6 +591,7 @@ def run_once(args, run_id, device):
 
     result = {
         "run": run_id, "mode": args.mode, "method": args.method,
+        "num_params": count_params(model),  # last stage's model
         "best_val": stage_results[-1]["best_val"], "best_test": stage_results[-1]["best_test"],
         "stages": stage_results, "output_dir": str(out_dir),
     }

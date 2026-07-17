@@ -185,6 +185,14 @@ def gcn_norm_edge_weight(edge_index, num_nodes):
     return deg_inv_sqrt[row] * deg_inv_sqrt[col]
 
 
+def weighted_propagate(x, edge_index, edge_weight, num_nodes):
+    """(A_hat @ x) for an explicitly-weighted adjacency (e.g. gcn_norm_edge_weight's
+    D^-1/2 A D^-1/2) — unlike scatter_mean, neighbours are combined with per-edge
+    weights rather than a uniform average. Used by GCN-style / LightGCN-style models."""
+    row, col = edge_index
+    return scatter_add(x[col] * edge_weight.unsqueeze(-1), row, num_nodes)
+
+
 def scatter_max_feat(src, index, dim_size):
     """Max-aggregation over feature vectors using scatter_reduce_ (PyTorch 1.12+).
     Nodes with no incoming edges keep the initial value of 0."""
