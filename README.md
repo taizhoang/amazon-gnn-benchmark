@@ -1,38 +1,92 @@
-# Combating Over-smoothing in GNNs: Skip Connections vs. Layer Aggregation on OGBN-ARXIV
+# amazon-gnn-benchmark
 
-<table>
-  <tr>
-    <td><img src="https://www.kaggleusercontent.com/kf/334701497/eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..geHNd-xDo-rMCKIrBGgN2A.26OlgBM_BQ3jv0QOX-k3G5Row-mCDx9orLkHA7eT0fuaI3Ij58fJabeu47dg-HMDUi-XtCPHKn_phjABXuXfDeVRMKlkozixny19ioL3ZFSlg7Prjx4pNVdENG0dZCeqD5IZE2Ri8Jr6uXUvsgTyXQjgCvjyFGrJRp2Fj-KRB2tHmrDFY2vPoL8hoQ6oGaQp0k0AYsEpbMCVJd8uEz_BAY0_jt97JCxViYrdKow06ZkUg-9lq96C4K_rETIp1mq5JUyZ_u4aBEBiK5WbHBAdBDt89cAH5sMp7I0Brhn9QBy0NZoL4MpJJlS0jEK3x8sP2ySt-I6G8j_CtAnsnKGizdsiiigl_fu8-604xRdSbTm185ZxIFflxXxka_q9gRJ42f-CUlRLatvofeQclJc1Uv0Ues9BjyJKwnv50oP55st3rjveQ5z7WTTKX_bXbww-iYP0RtcatnhcmcmqHNKU74Lg8uF57FfdHV37k0Hs5dbCamcRoK2AMs7ipM5BtxXNrwCD4RaaIoAchyIa-myBHl66BgsGmR0_Y5SfAgzd_aK7h7dWwbKa0J9-zobl8wcyyuJ5q-XAwtL-VDBsYV3O9OY6MvoBqGaF0egCEyJ9ZFZquBuCP8MRE4As5gPv0X94.U-jpofQ2Pr6JkVK3lyjsCQ/__results___files/__results___22_0.png" width="300"></td>
-    <td><img src="https://www.kaggleusercontent.com/kf/334701497/eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..geHNd-xDo-rMCKIrBGgN2A.26OlgBM_BQ3jv0QOX-k3G5Row-mCDx9orLkHA7eT0fuaI3Ij58fJabeu47dg-HMDUi-XtCPHKn_phjABXuXfDeVRMKlkozixny19ioL3ZFSlg7Prjx4pNVdENG0dZCeqD5IZE2Ri8Jr6uXUvsgTyXQjgCvjyFGrJRp2Fj-KRB2tHmrDFY2vPoL8hoQ6oGaQp0k0AYsEpbMCVJd8uEz_BAY0_jt97JCxViYrdKow06ZkUg-9lq96C4K_rETIp1mq5JUyZ_u4aBEBiK5WbHBAdBDt89cAH5sMp7I0Brhn9QBy0NZoL4MpJJlS0jEK3x8sP2ySt-I6G8j_CtAnsnKGizdsiiigl_fu8-604xRdSbTm185ZxIFflxXxka_q9gRJ42f-CUlRLatvofeQclJc1Uv0Ues9BjyJKwnv50oP55st3rjveQ5z7WTTKX_bXbww-iYP0RtcatnhcmcmqHNKU74Lg8uF57FfdHV37k0Hs5dbCamcRoK2AMs7ipM5BtxXNrwCD4RaaIoAchyIa-myBHl66BgsGmR0_Y5SfAgzd_aK7h7dWwbKa0J9-zobl8wcyyuJ5q-XAwtL-VDBsYV3O9OY6MvoBqGaF0egCEyJ9ZFZquBuCP8MRE4As5gPv0X94.U-jpofQ2Pr6JkVK3lyjsCQ/__results___files/__results___29_0.png" width="300"></td>
-  </tr>
-</table>
+A benchmark of GNN architectures on **Amazon Computers** (co-purchase graph,
+~13.7K products, 767-dim bag-of-words features, 10 categories), consolidated
+from three earlier experiment repos into one shared codebase, common dataset
+loader, and fixed train/valid/test split so every model is compared fairly.
 
-*Figure: Comparison of generalizability among GCN and GraphSAGE variants.*
+Every model is implemented in plain PyTorch (`scatter_add_` / `scatter_reduce`
+in [common/utils.py](common/utils.py)) — no `torch-geometric.nn`,
+`torch-scatter`, `torch-sparse`, or DGL. Those compiled extensions must match
+the installed torch build exactly, which breaks easily across environments;
+avoiding them keeps every script here runnable with nothing beyond `torch`
+itself and keeps peak memory at O(E) for the full graph.
 
-***
+## Model families
 
-This is the code for *Combating Over-smoothing in GNNs: Skip Connections vs. Layer Aggregation on OGBN-ARXIV*, a project for *IT5429E - Graph analytics for big data* (Master's course @ HUST).
-
-> All experiments are conducted in a Kaggle notebook environment equipped with an NVIDIA Tesla T4 GPU (16GB VRAM), 13GB RAM, and 2 CPU cores, using PyTorch and PyTorch Geometric for implementation.
-
-The mentioned Kaggle notebook can be found [[here]](https://www.kaggle.com/code/thaimeuu/it5429e-workspace), which uses Kaggle utility scripts that are based on this repository.
-
-| URL | Description | Based on |
+| Folder | Script | Model |
 |---|---|---|
-https://www.kaggle.com/code/thaimeuu/it5429e-workspace | Experiments (outputs, which are used in the reported, are saved in this notebook) | Independent |
-| https://www.kaggle.com/code/thaimeuu/graph-ml-it5429e-models | All models | [models/](models/) |
-| https://www.kaggle.com/code/thaimeuu/graph-ml-it5429e-learning | Training and evaluation functions | Independent |
-| https://www.kaggle.com/code/thaimeuu/graph-ml-it5429e-utils | Utils functions | [utils.py](utils.py) |
+| [graphsage/](graphsage/) | `train_graphsage.py` | GraphSAGE (mean aggregator), full-batch or mini-batch neighbour sampling |
+| [graphsage/](graphsage/) | `train_improved_graphsage.py` | + multi-aggregator (mean/max/std), Jumping Knowledge, degree-based importance sampling |
+| [sagat/](sagat/) | `train_sagat.py` | GAT baseline / structural-feature-concat ablation / Structure-Aware GAT (structural bias injected into attention) |
+| [gamlp/](gamlp/) | `train_gamlp.py` | GAMLP (decoupled propagation + hop-attention MLP), plain or RLU (label propagation + self-training) mode |
+| [gamlp/](gamlp/) | `train_retrieval_gamlp.py` | + retrieval-guided hop features (FAISS or exact-torch nearest-neighbour fusion) |
 
-The figures for OGBN-ARXIV in the report can be found here: [images/](images/)
+Each script is self-contained and runnable directly (`python graphsage/train_graphsage.py`),
+writing to its own `outputs/<model>/<timestamp>_run.../` directory:
+`train.log`, `metrics.jsonl` (per epoch), `results.json` (final), `curves.png`
+(loss/accuracy plot), and a `best.pt` / `best_model.pt` checkpoint.
 
-The figures for the experiments can be found [in this Kaggle notebook](https://www.kaggle.com/code/thaimeuu/it5429e-workspace)
+## Setup
 
-The checkpoints for the experiments can be found here: [checkpoints/](checkpoints/)
+```bash
+pip install -r requirements.txt
+```
 
-| File | Description | Section in report |
-|---|---|---|
-| [checkpoints/transductive/](checkpoints/transductive/) | The main result | Section 4.1, Table 3 |
-| [checkpoints/oversmoothing/](checkpoints/oversmoothing/) | Over-smoothing analysis | Section 4.2, Figures 5, 6, 7 |
-| [checkpoints/ablation/](checkpoints/ablation/) | Ablation study | Section 4.3, Table 4 |
-| [checkpoints/appendix/](checkpoints/appendix/) | Over-smoothing comparison GTCN vs GCN variants | Appendix A, Figures 8, 9 |
+The dataset (`amazon_co_buy_computer.npz`) is auto-downloaded into `data/`
+via `torch_geometric.datasets.Amazon` the first time any script runs, if
+`torch-geometric` is installed (see the commented-out line in
+`requirements.txt`). Otherwise, place the file manually under
+`data/amazon_co_buy_computer/amazon_co_buy_computer.npz`.
+
+`split_idx.csv` at the repo root is a fixed stratified 60/20/20
+train/valid/test split (produced once, saved to CSV) that every script
+loads by default via `--split-file split_idx.csv`, so all models in the
+comparison tables below are evaluated on the exact same node sets. Pass
+`--split-file ""` to instead regenerate a fresh split from `--seed`.
+
+## Running the benchmark
+
+```bash
+# GraphSAGE
+python graphsage/train_graphsage.py
+python graphsage/train_graphsage.py --sampling --batch-size 512 --fanout 10 10   # mini-batch mode
+
+# Improved GraphSAGE (multi-aggregator + JK + importance sampling, all on by default)
+python graphsage/train_improved_graphsage.py
+python graphsage/train_improved_graphsage.py --no-multi-aggr --jk-mode none      # ablate back to plain GraphSAGE at the same width/depth
+
+# SA-GAT: baseline GAT, structural-concat ablation, and structure-aware attention (ours)
+python sagat/train_sagat.py --variant gat
+python sagat/train_sagat.py --variant gat-concat
+python sagat/train_sagat.py --variant sagat          # also runs the attention-vs-structure correlation analysis
+
+# GAMLP baseline
+python gamlp/train_gamlp.py --mode plain --cache-features
+python gamlp/train_gamlp.py --mode rlu --cache-features
+
+# Retrieval-Guided GAMLP
+python gamlp/train_retrieval_gamlp.py --cache-features --cache-retrieval
+```
+
+Every script exposes `--hidden`, `--dropout`, `--lr`, `--epochs`,
+`--patience`, `--seed`, `--num-runs`, `--gpu` (`--gpu -1` forces CPU), plus
+model-specific flags — run any script with `--help` for the full list.
+
+## Provenance
+
+Consolidated from three prior repos, each covering a different part of this
+benchmark:
+
+- **GraphML_GAMLP_v2** — `common/`, `graphsage/train_graphsage.py`,
+  `graphsage/train_improved_graphsage.py` (the shared scatter-based utilities
+  and dataset loader, and the GraphSAGE family, ported near-verbatim).
+- **GRAPH-SAGAT** — `sagat/train_sagat.py` (Structure-Aware GAT concept —
+  degree/PageRank/clustering/betweenness injected into GAT attention —
+  reimplemented from scratch in pure PyTorch; the original prototype used
+  DGL and computed the same idea with `edge_softmax`).
+- **GraphML_subject** — `gamlp/train_gamlp.py`, `gamlp/train_retrieval_gamlp.py`
+  (GAMLP baseline and the retrieval-guided variant, ported with the
+  torch-sparse `SparseTensor` hop-propagation replaced by `common.utils.propagate_mean`,
+  a plain `scatter_add`-based equivalent — exact, not approximate, since this
+  dataset's adjacency is symmetric; see that function's docstring).

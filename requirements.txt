@@ -1,0 +1,30 @@
+# Core stack — every model in this benchmark is pure PyTorch (scatter_add_ /
+# scatter_reduce in common/utils.py), so no torch-geometric, torch-scatter,
+# torch-sparse, or DGL is required to train anything.
+torch==2.2.2
+
+# Data loading / processing
+numpy==1.26.4
+scipy==1.15.3
+pandas==2.3.3
+scikit-learn==1.7.2
+
+# sagat/train_sagat.py: degree / PageRank / clustering / betweenness centrality
+networkx==3.4.2
+
+# Plotting (training curves, sagat attention-structure analysis)
+matplotlib==3.10.9
+
+# Optional — only used as an automatic downloader for the Amazon Computers
+# .npz the first time common/data.py can't find it under data/. Skip this
+# if you place the file manually (see README).
+# -f https://data.pyg.org/whl/torch-2.2.2+cpu.html
+# torch-geometric==2.2.0
+
+# Optional — gamlp/train_retrieval_gamlp.py's retrieval index. Falls back to
+# an exact torch cosine-similarity search in chunks when absent (slower, no
+# accuracy loss on a graph this size).
+# faiss-cpu==1.14.3
+
+# Notebook support (EDA, result inspection)
+ipykernel==7.3.0
