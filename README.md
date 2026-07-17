@@ -83,10 +83,10 @@ model-specific flags — run any script with `--help` for the full list.
 
 | Notebook | Purpose |
 |---|---|
-| [notebooks/01_eda.ipynb](notebooks/01_eda.ipynb) | Dataset exploration — split sizes, label distribution, feature stats, degree distribution, edge homophily. Loads through `common/data.py`, so the numbers match what every training script actually sees. |
+| [notebooks/01_eda.ipynb](notebooks/01_eda.ipynb) | Dataset exploration — split sizes, label distribution, feature stats, degree distribution, edge homophily. **Standalone** — the dataset loader is copied inline, not imported from `common/data.py`, so it runs on its own too. |
 | [notebooks/02_train_all_standalone.ipynb](notebooks/02_train_all_standalone.ipynb) | Trains every model **standalone** — every utility, the dataset loader, and all 6 model implementations are written directly in the notebook's own cells, no `import` from `common/`/`graphsage/`/`sagat/`/`gamlp/`/`lightgcn/`. Copy this one file (+ `split_idx.csv`) and it runs on its own, e.g. on Kaggle (a commented `%pip install` cell at the top covers a fresh environment). Defaults to a fast `SMOKE_TEST` pass over all 6 models; flip one flag for full training. |
 
-▶ **Run `02_train_all_standalone.ipynb` on Kaggle:** https://www.kaggle.com/code/phanchanchan/amazon-gnn-benchmark
+▶ **Run on Kaggle:** [`01_eda.ipynb`](https://www.kaggle.com/code/phanchanchan/amazon-eda) · [`02_train_all_standalone.ipynb`](https://www.kaggle.com/code/phanchanchan/amazon-gnn-benchmark)
 
 Both notebooks write their figures/tables/checkpoints under `outputs/` (gitignored), same as the training scripts.
 
